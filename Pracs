@@ -1,0 +1,4 @@
+cat > /home/maria_dev/input.csv
+[CAT=concatenation][CSV=comma separeated value]
+she sells sea shells with sea sells she shells
+pig -x local [pig is used to access data]
