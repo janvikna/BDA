@@ -9,7 +9,6 @@ grouped = GROUP words by word;
 wordcount = foreach grouped GENERATE group, COUNT(words);
 dump wordcount;
 
-
 ###########################################################################################
 
 #### HIVE ###########
