@@ -1,653 +1,260 @@
-PRACTICAL 01 - EIGEN VALUES AND EIGEN VECTORS
-
-# importing numpy library
-import numpy as np
-
-# create numpy 2d-array
-m = np.array([[1, 2],
-   		 [2, 3]])
-
-print("Printing the Original square array:\n",m)
-print()
-print('***************************************')
-print()
-# finding eigenvalues and eigenvectors
-w, v = np.linalg.eig(m)
-
-# printing eigen values
-print("Printing the Eigen values of the given square array:\n",w)
-print()
-# printing eigen vectors
-print("Printing Right Eigen Vectors of the given square array:\n",v)
-
-# importing numpy library
-import numpy as np
-
-# create numpy 2d-array
-m = np.array([[1, 2, 3],
-   		 [2, 3, 4],
-   		 [4, 5, 6]])
-
-print("Printing the Original square array:\n",m)
-print()
-print('***************************************')
-print()
-
-# finding eigenvalues and eigenvectors
-w, v = np.linalg.eig(m)
-
-# printing eigen values
-print("Printing the Eigen values of the given square array:\n",w)
-print()
-# printing eigen vectors
-print("Printing Right eigenvectors of the given square array:\n",v)
-
-import tensorflow as tf
-# Let's see how we can compute the eigen vectors and values from a matrix
-
-e_matrix_A = tf.random.uniform([2, 2], minval=3, maxval=10, dtype=tf.float32, name="matrixA")
-
-print("Matrix A: \n{}\n\n".format(e_matrix_A))
-
-# Calculating the eigen values and vectors using tf.linalg.eigh, if you only want the values you can use eigvalsh
-
-eigen_values_A, eigen_vectors_A = tf.linalg.eigh(e_matrix_A)
-
-print("Eigen Vectors: \n{} \n\nEigen Values: \n{}\n".format(eigen_vectors_A, eigen_values_A))
-
-# Let's see how we can compute the eigen vectors and values from a matrix
-
-e_matrix_A = tf.random.uniform([3, 3], minval=3, maxval=10, dtype=tf.float32, name="matrixA")
-
-print("Matrix A: \n{}\n\n".format(e_matrix_A))
-
-# Calculating the eigen values and vectors using tf.linalg.eigh, if you only want the values you can use eigvalsh
-
-eigen_values_A, eigen_vectors_A = tf.linalg.eigh(e_matrix_A)
-
-print("Eigen Vectors: \n{} \n\nEigen Values: \n{}\n".format(eigen_vectors_A, eigen_values_A))
-***********************************************************************************************************
-
-PRACTICAL 02 - XOR USING DEEP FORWARD NEURAL NETWORK
-
-# importing Python library
-import numpy as np
-
-# define Unit Step Function
-def unitStep(v):
-	if v >= 0:
-    	return 1
-	else:
-    	return 0
-
-# design Perceptron Model
-def perceptronModel(x, w, b):
-	v = np.dot(w, x) + b
-	y = unitStep(v)
-	return y
-
-# NOT Logic Function
-# wNOT = -1, bNOT = 0.5
-
-def NOT_logicFunction(x):
-	wNOT = -1
-	bNOT = 0.5
-	return perceptronModel(x, wNOT, bNOT)
-
-# AND Logic Function
-# here w1 = wAND1 = 1,  
-# w2 = wAND2 = 1, bAND = -1.5
-
-def AND_logicFunction(x):
-	w = np.array([1, 1])
-	bAND = -1.5
-	return perceptronModel(x, w, bAND)
-
-# OR Logic Function
-# w1 = 1, w2 = 1, bOR = -0.5
-
-def OR_logicFunction(x):
-	w = np.array([1, 1])
-	bOR = -0.5
-	return perceptronModel(x, w, bOR)
-
-# XOR Logic Function
-# with AND, OR and NOT   
-# function calls in sequence
-def XOR_logicFunction(x):
-  y1 = AND_logicFunction(x)
-  y2 = OR_logicFunction(x)
-  y3 = NOT_logicFunction(y1)
-  final_x = np.array([y2, y3])
-  finalOutput = AND_logicFunction(final_x)
-  y3 = NOT_logicFunction(y1)
-  return finalOutput
-
-# testing the Perceptron Model
-test1 = np.array([0, 1])
-test2 = np.array([1, 1])
-test3 = np.array([0, 0])
-test4 = np.array([1, 0])
-
-
-print("XOR({}, {}) = {}".format(0, 1, XOR_logicFunction(test1)))
-print("XOR({}, {}) = {}".format(1, 1, XOR_logicFunction(test2)))
-print("XOR({}, {}) = {}".format(0, 0, XOR_logicFunction(test3)))
-print("XOR({}, {}) = {}".format(1, 0, XOR_logicFunction(test4)))
-
-**************************************************************************************************************************************
-PRACTICAL 03 - BINARY CLASSIFICATION USING NEURAL NETWORK
-
-import pandas as pd
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.wrappers.scikit_learn import KerasClassifier
-from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-
-# load dataset
-dataframe = pd.read_csv("/content/sonar.all-data", header=None)
-
-dataset = dataframe.values
-
-# split into input (X) and output (Y) variables
-X = dataset[:,0:60].astype(float)
-Y = dataset[:,60]
-
-# encode class values as integers
-
-encoder = LabelEncoder()
-encoder.fit(Y)
-encoded_Y = encoder.transform(Y)
-
-# baseline model
-def create_baseline():
-    # create model
-    model = Sequential()
-    model.add(Dense(60, input_dim=60, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
-
-
-# evaluate model with standardized dataset
-
-estimator = KerasClassifier(build_fn=create_baseline, epochs=100, batch_size=5, verbose=0)
-kfold = StratifiedKFold(n_splits=10, shuffle=True)
-results = cross_val_score(estimator, X, encoded_Y, cv=kfold)
-print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
-
-
-# evaluate baseline model with standardized dataset
-estimators = []
-estimators.append(('standardize', StandardScaler()))
-estimators.append(('mlp', KerasClassifier(build_fn=create_baseline, epochs=100, batch_size=5, verbose=0)))
-pipeline = Pipeline(estimators)
-kfold = StratifiedKFold(n_splits=10, shuffle=True)
-results = cross_val_score(pipeline, X, encoded_Y, cv=kfold)
-print("Standardized: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
-
-
-# smaller model
-def create_smaller():
-    # create model
-    model = Sequential()
-    model.add(Dense(30, input_dim=60, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
-
-estimators = []
-estimators.append(('standardize', StandardScaler()))
-estimators.append(('mlp', KerasClassifier(build_fn=create_smaller, epochs=100, batch_size=5, verbose=0)))
-pipeline = Pipeline(estimators)
-kfold = StratifiedKFold(n_splits=10, shuffle=True)
-results = cross_val_score(pipeline, X, encoded_Y, cv=kfold)
-print("Smaller: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
-
-
-
-# larger model
-def create_larger():
-    # create model
-    model = Sequential()
-    model.add(Dense(60, input_dim=60, activation='relu'))
-    model.add(Dense(30, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
-estimators = []
-estimators.append(('standardize', StandardScaler()))
-estimators.append(('mlp', KerasClassifier(build_fn=create_larger, epochs=100, batch_size=5, verbose=0)))
-pipeline = Pipeline(estimators)
-kfold = StratifiedKFold(n_splits=10, shuffle=True)
-results = cross_val_score(pipeline, X, encoded_Y, cv=kfold)
-print("Larger: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
-
-************************************************************************************************************************************************
-
-PRACTICAL 04 - BREAST CANCER CLASSIFICATION
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import sklearn.datasets
-from sklearn.model_selection import train_test_split
-
-breast_cancer_dataset = sklearn.datasets.load_breast_cancer()
-
-dataFrame = pd.DataFrame(breast_cancer_dataset.data, columns = breast_cancer_dataset.feature_names)
-
-pd.set_option('display.max_columns', None)
-
-dataFrame.head(5)
-
-dataFrame['label']=breast_cancer_dataset.target
-
-dataFrame.tail(5)
-
-# number of rows and columns in the dataset
-dataFrame.shape
-
-# getting some information about the data
-dataFrame.info()
-
-# checking for missing values
-dataFrame.isnull().sum()
-
-# statistical measures about the data
-dataFrame.describe()
-
-# checking the distribution of Target Varibale
-dataFrame['label'].value_counts()
-
-dataFrame.groupby('label').mean()
-
-# Separating the features and target
-X = dataFrame.drop(columns='label', axis=1)
-Y = dataFrame['label']
-
-print(X)
-print(Y)
-
-# Splitting the data into training data & Testing data
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2, random_state=2)
-
-print(X.shape, X_train.shape, X_test.shape)
-
-#Standardize the data
-from sklearn.preprocessing import StandardScaler
-
-scaler = StandardScaler()
-
-X_train_std = scaler.fit_transform(X_train)
-X_test_std = scaler.transform(X_test)
-
-import tensorflow as tf
-tf.random.set_seed(3)
-from tensorflow import keras
-
-#Setting up Layers of Neural Network
-model = keras.Sequential([
-	keras.layers.Flatten(input_shape=(30,)),
-	keras.layers.Dense(20,activation='relu'),
-	keras.layers.Dense(2, activation='sigmoid')
-])
-
-#compiling the neural network
-model.compile(optimizer='adam',
-          	loss='sparse_categorical_crossentropy',
-          	metrics=['accuracy'])
-
-#Training Neural Network
-history = model.fit(X_train_std, Y_train, validation_split=0.1, epochs=10)
-
-# Visualizing Accuracy and Loss
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
-
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-
-plt.legend(['training data', 'validation data'], loc = 'lower right')
-
-
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-
-plt.title('model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-
-plt.legend(['training data', 'validation data'], loc = 'upper right')
-
-
-#Accuracy of the model on Test Data
-loss, accuracy = model.evaluate(X_test_std, Y_test)
-print(accuracy)
-
-print(X_test_std.shape)
-print(X_test_std[0])
-
-# model.predict() gives the prediction probability of each class for that data point
-Y_pred = model.predict(X_test_std)
-
-print(Y_pred.shape)
-print(Y_pred[0])
-
-print(X_test_std)
-print(Y_pred)
-
-#  argmax function
-
-my_list = [0.25, 0.56]
-index_of_max_value = np.argmax(my_list)
-print(my_list)
-print("Index of Max value: ",np.argmax(my_list))
-
-# converting the prediction probability to class labels
-
-Y_pred_labels = [np.argmax(i) for i in Y_pred]
-print(Y_pred_labels)
-
-# Building the predictive system
-
-
-input_data = (11.76,21.6,74.72,427.9,0.08637,0.04966,0.01657,0.01115,0.1495,0.05888,0.4062,1.21,2.635,28.47,0.005857,0.009758,0.01168,0.007445,0.02406,0.001769,12.98,25.72,82.98,516.5,0.1085,0.08615,0.05523,0.03715,0.2433,0.06563)
-
-# change the input_data to a numpy array
-input_data_as_numpy_array = np.asarray(input_data)
-
-# reshape the numpy array as we are predicting for one data point
-input_data_reshaped = input_data_as_numpy_array.reshape(1,-1)
-
-# standardizing the input data
-input_data_std = scaler.transform(input_data_reshaped)
-
-prediction = model.predict(input_data_std)
-print(prediction)
-
-prediction_label = [np.argmax(prediction)]
-print(prediction_label)
-
-if(prediction_label[0] == 0):
-  print('The tumor is Malignant')
-
-else:
-  print('The tumor is Benign')
-
-****************************************************************************************************************************************
-PRACTICAL 05 - IMPLEMENTATION OF CONVOLUTIONAL NEURAL NETWORK TO PREDICT NUMBERS FROM NUMBER IMAGES
-
-mnist = tf.keras.datasets.mnist
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
-X_train.shape
-Y_train.shape
-X_test.shape
-Y_test.shape
-
-import matplotlib.pyplot as plt
-plt.imshow(X_train[2])
-plt.show()
-plt.imshow(X_train[2], cmap=plt.cm.binary)
-
-X_train[2]
-
-X_train = tf.keras.utils.normalize(X_train, axis=1)
-X_test = tf.keras.utils.normalize(X_test, axis=1)
-plt.imshow(X_train[2], cmap=plt.cm.binary)
-
-print(X_train[2])
-
-import tensorflow as tf
-import tensorflow.keras.layers  as KL
-import tensorflow.keras.models  as KM
-## Model
-inputs = KL.Input(shape=(28, 28, 1))
-c = KL.Conv2D(32, (3, 3), padding="valid", activation=tf.nn.relu)(inputs)
-m = KL.MaxPool2D((2, 2), (2, 2))(c)
-d = KL.Dropout(0.5)(m)
-c = KL.Conv2D(64, (3, 3), padding="valid", activation=tf.nn.relu)(d)
-m = KL.MaxPool2D((2, 2), (2, 2))(c)
-d = KL.Dropout(0.5)(m)
-c = KL.Conv2D(128, (3, 3), padding="valid", activation=tf.nn.relu)(d)
-f = KL.Flatten()(c)
-outputs = KL.Dense(10, activation=tf.nn.softmax)(f)
-model = KM.Model(inputs, outputs)
-model.summary()
-model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-
-
-model.fit(X_train, y_train, epochs=5)
-test_loss, test_acc = model.evaluate(X_test, y_test)
-print("Test Loss: {0} - Test Acc: {1}".format(test_loss, test_acc))
-
-******************************************************************************************************************8
-PRACTICAL 06 - CiFAR 10 DATASET
-
-import tensorflow as tf
-from tensorflow.keras import layers, models
-from tensorflow.keras.datasets import cifar10
-from tensorflow.keras.utils import to_categorical
-
-# Load and preprocess the CIFAR-10 dataset
-(train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
-train_images = train_images.astype('float32') / 255
-test_images = test_images.astype('float32') / 255
-train_labels = to_categorical(train_labels)
-test_labels = to_categorical(test_labels)
-
-# Create the CNN model
-cnn_model = models.Sequential()
-cnn_model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
-cnn_model.add(layers.MaxPooling2D((2, 2)))
-cnn_model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-cnn_model.add(layers.MaxPooling2D((2, 2)))
-cnn_model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-cnn_model.add(layers.Flatten())
-cnn_model.add(layers.Dense(64, activation='relu'))
-cnn_model.add(layers.Dense(10, activation='softmax'))
-
-# Compile the CNN model
-cnn_model.compile(optimizer='adam',
-              	loss='categorical_crossentropy',
-              	metrics=['accuracy'])
-
-# Train the CNN model
-cnn_history = cnn_model.fit(train_images, train_labels, epochs=10, batch_size=64,
-                        	validation_data=(test_images, test_labels))
-
-# Evaluate the CNN model
-test_loss, test_acc = cnn_model.evaluate(test_images, test_labels)
-print(f'CNN Test Accuracy: {test_acc}')
-
-
-# Import necessary libraries for RNN
-from tensorflow.keras.layers import LSTM, Embedding, Dense
-
-# Load and preprocess the CIFAR-10 dataset (flatten the images for RNN)
-(train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
-train_images = train_images.reshape((50000, 32 * 32 * 3))
-train_images = train_images.astype('float32') / 255
-test_images = test_images.reshape((10000, 32 * 32 * 3))
-test_images = test_images.astype('float32') / 255
-train_labels = to_categorical(train_labels)
-test_labels = to_categorical(test_labels)
-
-# Create the RNN model
-rnn_model = models.Sequential()
-rnn_model.add(Embedding(input_dim=32 * 32 * 3, output_dim=128))
-rnn_model.add(LSTM(64))
-rnn_model.add(Dense(10, activation='softmax'))
-
-# Compile the RNN model
-rnn_model.compile(optimizer='adam',
-              	loss='categorical_crossentropy',
-              	metrics=['accuracy'])
-
-# Train the RNN model
-rnn_history = rnn_model.fit(train_images, train_labels, epochs=10, batch_size=64,
-                        	validation_data=(test_images, test_labels))
-
-# Evaluate the RNN model
-test_loss, test_acc = rnn_model.evaluate(test_images, test_labels)
-print(f'RNN Test Accuracy: {test_acc}')
-
-****************************************************************************************************************
-
-PRACTICAL 07 - Movie Review Text Classification Using LSTM
-
-import numpy as np
-from keras.models import Sequential
-from keras.preprocessing import sequence
-from keras.layers import Dropout
-from keras.layers import Dense, Embedding, LSTM, Bidirectional
-from keras.datasets import imdb
-
-(x_train, y_train), (x_test, y_test) = imdb.load_data(num_words = 10000)
-
-max_len = 200
-x_train = sequence.pad_sequences(x_train, maxlen=max_len)
-x_test = sequence.pad_sequences(x_test, maxlen=max_len)
-y_train = np.array(y_train)
-y_test = np.array(y_test)
-
-x_train.shape, y_train.shape
-
-x_test.shape, y_test.shape
-
-n_unique_words = 10000
-
-model = Sequential()
-model.add(Embedding(n_unique_words, 128, input_length = max_len))
-model.add(Bidirectional(LSTM(64)))
-model.add(Dropout(0.5))
-model.add(Dense(1, activation = 'sigmoid'))
-model.compile(loss='binary_crossentropy', optimizer = 'adam', metrics = ['accuracy'])
-
-batch_size = 250
-
-history = model.fit(x_train, y_train,
-                	batch_size=batch_size,
-                	epochs = 12,
-                	validation_data = [x_test, y_test])
-print(history.history['loss'])
-print(history.history['accuracy'])
-
-from matplotlib import pyplot as plt
-plt.plot(history.history['loss'])
-plt.plot(history.history['accuracy'])
-plt.title("Model Loss vs Accuracy")
-plt.xlabel("Epoch")
-plt.legend(['loss', 'accuracy'], loc = "upper right")
+# #PRACTICAL 01 - PAGE RANK WITHOUT WEIGHTED EDGES
+
+pip install networkx
+import networkx as nx
+G = nx.DiGraph()
+[G.add_node(k) for k in ["A", "B", "C", "D", "E", "F", "G"]]
+G.add_edges_from([('G','A'), ('A', 'G'), ('B','A'), ('C','A'), ('A','C'), ('A','D'), ('E','A'), ('F','A'), ('D','B'), ('D','F')])
+ppr1 = nx.pagerank(G)
+pos = nx.spiral_layout(G)
+nx.draw(G, pos, with_labels = True, node_color = 'Yellow')
+
+# PAGE RANK USING NETWORKX
+
+import networkx as nx
+import pylab as plt
+D = nx.DiGraph()
+D.add_weighted_edges_from([('A','B',1), ('A','C',1), ('C','A',1), ('B','C',1)])
+print(nx.pagerank(D))
+nx.draw(D, with_labels = True)
 plt.show()
 
-*********************************************************************************************************************************************
 
-PRACTICAL 08 - GANS in MNIST FASHION Dataset
+# PRACTICAL 03 - HITS ALGORITHM
 
-import numpy as np
+import networkx as nx
+G= nx.DiGraph()
+G.add_edges_from([(1,2), (1,3), (2,4), (3,4), (4,5)])
+authority_score, hub_score = nx.hits(G)
+print('Authority Score: ', authority_score)
+print('Hub Score : ', hub_score)
+
+
+# PRACTICAL 04 - SIMPLE WEB CRAWLER
+
+import requests
+!pip install parsel
+from parsel import Selector
+import time
+start = time.time()
+response = requests.get('http://recurship.com/')
+selector = Selector(response.text)
+href_links = selector.xpath('//a/@href').getall()
+image_links = selector.xpath('//img/@src').getall()
+print(href_links)
+print(image_links)
+end = time.time()
+print('Time taken in seconds : ', end-start)
+
+
+# PRACTICAL 05 - FOCUSED CRAWLER FOR WEB SEARCH
+
+import requests
+from bs4 import BeautifulSoup
+import re
+
+class LocalSearchCrawler:
+    def __init__(self, seed_url, keyword, max_depth=3):
+        self.seed_url = seed_url
+        self.keyword = keyword
+        self.max_depth = max_depth
+        self.visited_urls = set()
+        
+    def crawl(self, url, depth=1):
+        if depth > self.max_depth or url in self.visited_urls:
+            return
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                self.extract_information(url, soup)
+                # Find and crawl links on the page
+                links = soup.find_all('a', href=True)
+                for link in links:
+                    next_url = link['href']
+                    if self.is_valid_url(next_url):
+                        self.crawl(next_url, depth + 1)
+                self.visited_urls.add(url)
+        except Exception as e:
+            print(f"Error crawling {url}: {e}")
+            
+    def extract_information(self, url, soup):
+        # Extract information from the page based on your needs # For example, extract business name, address, phone number, etc. # Customize this method based on the structure of the pages you are crawling.
+        print(f"Extracting information from {url}")
+        
+    def is_valid_url(self, url):
+# Customize this method to filter URLs based on your criteria    
+        return re.search(self.keyword,url) is not None
+
+if __name__ == "__main__":
+    seed_url = "http://recurship.com/" # Replace with the starting URL for your local search
+    keyword = "blog" # Replace with a keyword that identifies local business URLs
+    max_depth = 3 # Maximum depth for crawling (adjust as needed)
+    local_search_crawler = LocalSearchCrawler(seed_url, keyword, max_depth)
+    local_search_crawler.crawl(seed_url)
+
+
+PRACTICAL 06 - OPINION SEARCH AND RETRIEVAL
+
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+#Sample opinions
+opinions={
+    "I love this product!",
+    "The service was terrible",
+    "The customer support team was ver helpful"
+}
+#Function to perform sentiment analysis
+def analyze_sentiment(text):
+    sia=SentimentIntensityAnalyzer()
+    sentiment_score=sia.polarity_scores(text)['compound']
+    
+    if sentiment_score>=0.05:
+        return "positive"
+    elif sentiment_score<=0.05:
+        return "negative"
+    else:
+        return "neutral"
+    
+    def retrieve_opinions(sentiment):
+        matching_opinions=[opinion for opinion in opinions if analyze_sentiment(opinion) == sentiment]
+        return matching_opinions
+    
+    if __name__ == "__main__":
+        #Exmapl:Retrieve positive opinions
+        positive_opinions=retrieve_opinions("positvie")
+        
+        print("Positvie opinions")
+        for opinion in positive_opinions:
+            print(f" -{opinion}")
+        
+        negative_opinions=retrieve_opinions("negative")
+        
+        print ("\nNegative opinions")
+        for opinion in negative_opinions:
+            print(f" -{opinion}")
+
+PRACTICAL 07 - SENTIMENT ANALYSIS
+
+pip install TextBlob
+from textblob import TextBlob
+def sentiment(text):
+    blob=TextBlob(text)
+    sentiment_polarity=blob.sentiment.polarity
+    
+    if sentiment_polarity > 0:
+        return 'positive'
+    elif sentiment_polarity < 0:
+        return 'negative'
+    else:
+        return 'netural'
+    
+if __name__ == "__main__":
+    
+    sample_text="I love python very much,its anamazing language"
+    
+    get_sentiment=sentiment(sample_text)
+    
+    print(f"Sample Text:{sample_text}")
+    print(f"sentmental:{get_sentiment}")
+
+
+PRACTICAL 08 - WEB CONTENT MINING
+
+import requests
+from bs4 import BeautifulSoup
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.probability import FreqDist
 import matplotlib.pyplot as plt
-from tensorflow.keras.datasets import fashion_mnist
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, LeakyReLU, BatchNormalization, Reshape, Flatten, Input
-from tensorflow.keras.optimizers import Adam
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
 
-# Load Fashion MNIST dataset
-(x_train, _), (_,_) = fashion_mnist.load_data()
+#Function to get HTML content from a URL 
+def get_html_content(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text
+    else:
+        print(f"Failed to retrieve content. Status code: {response.status_code}")
+        return None
 
-# Normalize the Image
-x_train = x_train / 127.5-1.0
-x_train = np.expand_dims(x_train, axis = 3)
-
-# Define Dimensions of the noise vector
-latent_dim = 100
-
-# Generator Model
-generator = Sequential([
-	Dense(128 * 7 * 7, input_dim = latent_dim),
-	LeakyReLU(0.2),
-	Reshape((7,7,128)),
-	BatchNormalization(),
-	Flatten(),
-	Dense(128 * 7 * 7),
-	LeakyReLU(0.2),
-	Reshape((7,7,128)),
-	BatchNormalization(),
-	Flatten(),
-	Dense(28*28, activation = 'tanh'),
-	Reshape((28,28,1))
-])
+#Function to extract text content from HTML using BeautifulSoup
+def extract_text(html_content):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    paragraphs = soup.find_all('p')
+    text=''.join([paragraph.get_text() for paragraph in paragraphs])
+    return text
 
 
-# Discriminator Model
-discriminator = Sequential([
-	Flatten(input_shape=(28,28,1)),
-	Dense(128),
-	LeakyReLU(0.2),
-	Dense(1,activation = 'sigmoid')
-])
+#Frequncy to tokenize and analyze word frequency
+def analyze_word_frequency(text):
+    tokens = word_tokenize(text)
+    # Remove stop words
+    stop_words = set(stopwords.words('english'))
+    filtered_tokens = [word.lower() for word in tokens if word.isalnum() and word.lower() not in stop_words]
+    # Calculate word frequency distribution
+    freq_dist = FreqDist(filtered_tokens)
+    return freq_dist
 
-# Compile the discriminator
-discriminator.compile(loss = 'binary_crossentropy',
-                  	optimizer = Adam(lr = 0.0002, beta_1 = 0.5),
-                  	metrics = ['accuracy'])
+#Function to plot word frequency distribution
+def plot_word_frequency(freq_dist):
+    freq_dist.plot(20, cumulative=False)
+    plt.show()
 
-# Combine the generator and discriminator into a single model
-discriminator.trainable = False
-gan_input = Input(shape=(latent_dim,))
-generated_image = generator(gan_input)
-gan_output = discriminator(generated_image)
-gan = Model(gan_input, gan_output)
-gan.compile(loss="binary_crossentropy",
-        	optimizer = Adam(lr=0.0002, beta_1 = 0.5))
+if __name__ == "__main__":
+# Replace 'https://example.com' with the URL you want to mine
+    target_url = 'https://www.searchenginejournal.com'
 
-# Training the GAN
+# Step 1: Get HTML content
+    html_content = get_html_content(target_url)
+    if html_content:
+    #Step 2: Extract text content 
+        extracted_text = extract_text(html_content)
+        
+    # Step 3: Analyze word frequncy
+        word_frequency = analyze_word_frequency(extracted_text)
+        plot_word_frequency(word_frequency)
 
-epochs = 1000
-batch_size = 128
 
-for epoch in range(epochs):
-  # Train the Discriminator
-  idx = np.random.randint(0, x_train.shape[0], batch_size)
-  real_images = x_train[idx]
-  noise = np.random.normal(0,1,(batch_size, latent_dim))
-  fake_images = generator.predict(noise)
-  real_labels = np.ones((batch_size, 1))
-  fake_labels = np.zeros((batch_size, 1))
-  d_loss_real = discriminator.train_on_batch(real_images, real_labels)
-  d_loss_fake = discriminator.train_on_batch(fake_images, fake_labels)
-  d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+PRACTICAL 09 - WEB SEARCH MINING
 
-  # Train generator
-  noise = np.random.normal(0,1, (batch_size, latent_dim))
-  fake_labels = np.ones((batch_size, 1))
-  g_loss = gan.train_on_batch
+from bs4 import BeautifulSoup
+#function to get HTML content from a URL
 
-  # Print Progress
-  if epoch % 100 == 0:
-	print(f'Epoch {epoch}/{epochs} | Discriminator Loss: {d_loss[0]} | Generator Loss: {g_loss}')
+import requests
 
-# Generate images
-rows, cols = 5, 5
-noise = np.random.normal(0, 1, (rows * cols, latent_dim))
-generated_images = generator.predict(noise)
+def get_html_content(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text
+    else:
+        print(f"Failed to retrieve content. Status code: {response.status_code}")
+        return None
 
-# Plot generated images
-plt.figure(figsize=(10, 10))
-for i in range(rows * cols):
-	plt.subplot(rows, cols, i + 1)
-	plt.imshow((generated_images[i].reshape(28, 28) + 1) / 2, cmap='gray')
-	plt.axis('off')
-plt.tight_layout()
-plt.show()
+#Function to extract links from HTML using BeautifulSoup
+def extract_links(html_content, base_url):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    links = soup.find_all('a', href=True)
+    absolute_links = [link['href'] if link['href'].startswith('http') else f"{base_url}/{link['href']}" for link in links]
+    return absolute_links
+
+if __name__ == "__main__":
+    target_url = 'https://www.searchenginejournal.com'
+
+#Step1: Get HTML content
+
+html_content = get_html_content(target_url)
+if html_content:
+    #Step2: Extract links
+    base_url = '/'.join(target_url.split('/')[:3]) #Extracting base URL
+    links = extract_links(html_content, base_url)
+    #Step3: Display extracted linkd
+    print("Extracted Links:")
+    for link in links:
+        print(link)
+
 
 
 
