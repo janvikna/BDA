@@ -1,0 +1,261 @@
+# #PRACTICAL 01 - PAGE RANK WITHOUT WEIGHTED EDGES
+
+pip install networkx
+import networkx as nx
+G = nx.DiGraph()
+[G.add_node(k) for k in ["A", "B", "C", "D", "E", "F", "G"]]
+G.add_edges_from([('G','A'), ('A', 'G'), ('B','A'), ('C','A'), ('A','C'), ('A','D'), ('E','A'), ('F','A'), ('D','B'), ('D','F')])
+ppr1 = nx.pagerank(G)
+pos = nx.spiral_layout(G)
+nx.draw(G, pos, with_labels = True, node_color = 'Yellow')
+
+# PAGE RANK USING NETWORKX
+
+import networkx as nx
+import pylab as plt
+D = nx.DiGraph()
+D.add_weighted_edges_from([('A','B',1), ('A','C',1), ('C','A',1), ('B','C',1)])
+print(nx.pagerank(D))
+nx.draw(D, with_labels = True)
+plt.show()
+
+
+# PRACTICAL 03 - HITS ALGORITHM
+
+import networkx as nx
+G= nx.DiGraph()
+G.add_edges_from([(1,2), (1,3), (2,4), (3,4), (4,5)])
+authority_score, hub_score = nx.hits(G)
+print('Authority Score: ', authority_score)
+print('Hub Score : ', hub_score)
+
+
+# PRACTICAL 04 - SIMPLE WEB CRAWLER
+
+import requests
+!pip install parsel
+from parsel import Selector
+import time
+start = time.time()
+response = requests.get('http://recurship.com/')
+selector = Selector(response.text)
+href_links = selector.xpath('//a/@href').getall()
+image_links = selector.xpath('//img/@src').getall()
+print(href_links)
+print(image_links)
+end = time.time()
+print('Time taken in seconds : ', end-start)
+
+
+# PRACTICAL 05 - FOCUSED CRAWLER FOR WEB SEARCH
+
+import requests
+from bs4 import BeautifulSoup
+import re
+
+class LocalSearchCrawler:
+    def __init__(self, seed_url, keyword, max_depth=3):
+        self.seed_url = seed_url
+        self.keyword = keyword
+        self.max_depth = max_depth
+        self.visited_urls = set()
+        
+    def crawl(self, url, depth=1):
+        if depth > self.max_depth or url in self.visited_urls:
+            return
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                self.extract_information(url, soup)
+                # Find and crawl links on the page
+                links = soup.find_all('a', href=True)
+                for link in links:
+                    next_url = link['href']
+                    if self.is_valid_url(next_url):
+                        self.crawl(next_url, depth + 1)
+                self.visited_urls.add(url)
+        except Exception as e:
+            print(f"Error crawling {url}: {e}")
+            
+    def extract_information(self, url, soup):
+        # Extract information from the page based on your needs # For example, extract business name, address, phone number, etc. # Customize this method based on the structure of the pages you are crawling.
+        print(f"Extracting information from {url}")
+        
+    def is_valid_url(self, url):
+# Customize this method to filter URLs based on your criteria    
+        return re.search(self.keyword,url) is not None
+
+if __name__ == "__main__":
+    seed_url = "http://recurship.com/" # Replace with the starting URL for your local search
+    keyword = "blog" # Replace with a keyword that identifies local business URLs
+    max_depth = 3 # Maximum depth for crawling (adjust as needed)
+    local_search_crawler = LocalSearchCrawler(seed_url, keyword, max_depth)
+    local_search_crawler.crawl(seed_url)
+
+
+PRACTICAL 06 - OPINION SEARCH AND RETRIEVAL
+
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+#Sample opinions
+opinions={
+    "I love this product!",
+    "The service was terrible",
+    "The customer support team was ver helpful"
+}
+#Function to perform sentiment analysis
+def analyze_sentiment(text):
+    sia=SentimentIntensityAnalyzer()
+    sentiment_score=sia.polarity_scores(text)['compound']
+    
+    if sentiment_score>=0.05:
+        return "positive"
+    elif sentiment_score<=0.05:
+        return "negative"
+    else:
+        return "neutral"
+    
+    def retrieve_opinions(sentiment):
+        matching_opinions=[opinion for opinion in opinions if analyze_sentiment(opinion) == sentiment]
+        return matching_opinions
+    
+    if __name__ == "__main__":
+        #Exmapl:Retrieve positive opinions
+        positive_opinions=retrieve_opinions("positvie")
+        
+        print("Positvie opinions")
+        for opinion in positive_opinions:
+            print(f" -{opinion}")
+        
+        negative_opinions=retrieve_opinions("negative")
+        
+        print ("\nNegative opinions")
+        for opinion in negative_opinions:
+            print(f" -{opinion}")
+
+PRACTICAL 07 - SENTIMENT ANALYSIS
+
+pip install TextBlob
+from textblob import TextBlob
+def sentiment(text):
+    blob=TextBlob(text)
+    sentiment_polarity=blob.sentiment.polarity
+    
+    if sentiment_polarity > 0:
+        return 'positive'
+    elif sentiment_polarity < 0:
+        return 'negative'
+    else:
+        return 'netural'
+    
+if __name__ == "__main__":
+    
+    sample_text="I love python very much,its anamazing language"
+    
+    get_sentiment=sentiment(sample_text)
+    
+    print(f"Sample Text:{sample_text}")
+    print(f"sentmental:{get_sentiment}")
+
+
+PRACTICAL 08 - WEB CONTENT MINING
+
+import requests
+from bs4 import BeautifulSoup
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.probability import FreqDist
+import matplotlib.pyplot as plt
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+
+#Function to get HTML content from a URL 
+def get_html_content(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text
+    else:
+        print(f"Failed to retrieve content. Status code: {response.status_code}")
+        return None
+
+#Function to extract text content from HTML using BeautifulSoup
+def extract_text(html_content):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    paragraphs = soup.find_all('p')
+    text=''.join([paragraph.get_text() for paragraph in paragraphs])
+    return text
+
+
+#Frequncy to tokenize and analyze word frequency
+def analyze_word_frequency(text):
+    tokens = word_tokenize(text)
+    # Remove stop words
+    stop_words = set(stopwords.words('english'))
+    filtered_tokens = [word.lower() for word in tokens if word.isalnum() and word.lower() not in stop_words]
+    # Calculate word frequency distribution
+    freq_dist = FreqDist(filtered_tokens)
+    return freq_dist
+
+#Function to plot word frequency distribution
+def plot_word_frequency(freq_dist):
+    freq_dist.plot(20, cumulative=False)
+    plt.show()
+
+if __name__ == "__main__":
+# Replace 'https://example.com' with the URL you want to mine
+    target_url = 'https://www.searchenginejournal.com'
+
+# Step 1: Get HTML content
+    html_content = get_html_content(target_url)
+    if html_content:
+    #Step 2: Extract text content 
+        extracted_text = extract_text(html_content)
+        
+    # Step 3: Analyze word frequncy
+        word_frequency = analyze_word_frequency(extracted_text)
+        plot_word_frequency(word_frequency)
+
+
+PRACTICAL 09 - WEB SEARCH MINING
+
+from bs4 import BeautifulSoup
+#function to get HTML content from a URL
+
+import requests
+
+def get_html_content(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text
+    else:
+        print(f"Failed to retrieve content. Status code: {response.status_code}")
+        return None
+
+#Function to extract links from HTML using BeautifulSoup
+def extract_links(html_content, base_url):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    links = soup.find_all('a', href=True)
+    absolute_links = [link['href'] if link['href'].startswith('http') else f"{base_url}/{link['href']}" for link in links]
+    return absolute_links
+
+if __name__ == "__main__":
+    target_url = 'https://www.searchenginejournal.com'
+
+#Step1: Get HTML content
+
+html_content = get_html_content(target_url)
+if html_content:
+    #Step2: Extract links
+    base_url = '/'.join(target_url.split('/')[:3]) #Extracting base URL
+    links = extract_links(html_content, base_url)
+    #Step3: Display extracted linkd
+    print("Extracted Links:")
+    for link in links:
+        print(link)
+
+
+
+
+
